@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod.GET
 @RequestMapping(path = Array("/recommend-movies"))
 class MovieRecommendationHandler {
     @RequestMapping(method = Array(GET))
-    def recommendMovies(): Unit = {
-      MovieRecommendation.recommendMovies()
+    def recommendMovies(): Map[String, Any] = {
+         MovieRecommendation.recommendMovies()
     }
 }
