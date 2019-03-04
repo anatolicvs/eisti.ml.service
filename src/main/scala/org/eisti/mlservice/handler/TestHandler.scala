@@ -1,4 +1,4 @@
-package org.eisti.mlservice.controller
+package org.eisti.mlservice.handler
 
 import java.time.LocalDateTime
 
