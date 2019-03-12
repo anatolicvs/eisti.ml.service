@@ -1,28 +1,60 @@
 package org.eisti.mlservice.recommendation
 
-import java.time.LocalDateTime
 
-import org.apache.spark.SparkConf
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier, LogisticRegression}
-import org.apache.spark.mllib.recommendation.{MatrixFactorizationModel, Rating}
+import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{IntegerType, StructType}
-import org.apache.spark.ml.regression.{LinearRegression, LinearRegressionModel}
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}
-import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorAssembler, VectorIndexer}
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.springframework.beans.factory.annotation.Autowired
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
+import org.springframework.beans.factory.annotation.{Autowired, Value}
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 
+
+case class Movie(color: String,
+                 director_name:String,
+                 num_critic_for_reviews:Int,
+                 duration:Int,
+                 director_facebook_likes:Int,
+                 actor_3_facebook_likes:Int,
+                 actor_2_name:String,
+                 actor_1_facebook_likes:Int,
+                 gross:Int,
+                 genres: String,
+                 actor_1_name: String,
+                 movie_title:String,
+                 num_voted_users:Int,
+                 cast_total_facebook_likes: Int,
+                 actor_3_name:String,
+                 facenumber_in_poster:Int,
+                 plot_keywords:String,
+                 movie_imdb_link:String,
+                 num_user_for_reviews:Int,
+                 language:String,
+                 country:String,
+                 content_rating: String,
+                 budget:Long,
+                 title_year: Int,
+                 actor_2_facebook_likes:Int,
+                 imdb_score:Double,
+                 aspect_ratio:Double,
+                 movie_facebook_likes:Int)
+
+case class PMovieScore(prevImdbScore:Int, predictedImdbScore:Int)
+
 @Service
-class MovieRecommendation( @Autowired
-                           val spark: SparkSession) {
-  
+class MovieRecommendation(@Autowired
+                           val spark:SparkSession) {
+
+  @Autowired
+  var environment: Environment = null
+
+  @Value("#{environment['movies.data.file'] ?: '/Users/aytacozkan/data-bi/data/movie_metadata.csv'}")
+  val dataUri:String = null
+
+
     def computeRmse(model:MatrixFactorizationModel,data: RDD[Rating],implicitPrefs:Boolean):Double = {
 
       val predictions: RDD[Rating] = model.predict(data.map(x => (x.user,x.product)))
@@ -34,21 +66,8 @@ class MovieRecommendation( @Autowired
       math.sqrt(predictionsAndRatings.map(x => (x._1 - x._2) * (x._1 - x._2)).mean())
     }
 
-    def recommendMovies(): Map[String, Any]  = {
+    def predictMoviesIMDBScores(): Map[String, Any]  = {
       
-      val conf = new SparkConf()
-        .setAppName("MovieRecommendation")
-        .setMaster("local[*]")
-        .set("spark.driver.host", "127.0.0.1")
-        .set("spark.sql.shuffle.partitions", "6")
-        .set("spark.executor.memory", "2g")
-        .set("spark.sql.warehouse.dir", "/Users/aytacozkan/data-bi")
-
-      val spark1 = SparkSession
-        .builder()
-        .config(conf)
-        .getOrCreate()
-
       import spark.implicits._
 
       val extractFirstGenre = udf((col: String) => col.split('|')(0))
@@ -66,27 +85,36 @@ class MovieRecommendation( @Autowired
         .option("inferSchema", true)
         .option("ignoreLeadingWhiteSpace", true)
         .option("ignoreTrainingWhiteSpace", true)
-        //.option("ignoreCorruptFiles",true)
-        .option("nullValue", "None")
+        .option("ignoreCorruptFiles",true)
+        .option("nullValue", false)
         .format("csv")
-        .load("/Users/aytacozkan/data-bi/data/movie_metadata.csv")
-        .withColumn("first_genre", extractFirstGenre($"genres"))
-        .withColumn("second_genre", extractSecondGenre($"genres"))
+        .load(dataUri)
         .na.fill(0)
-      
 
+
+      val movieDF = df.as[Movie]
+
+      movieDF.createOrReplaceTempView("movies")
+
+      val moviesqlresult = spark.sql("SELECT movie_title,imdb_score FROM movies desc limit 20")
+
+      moviesqlresult.show(true)
+      
+      /*
       val moviesDF = df.select(df.col("movie_title"),
                                 df.col("genres"),
                                 df.col("num_user_for_reviews"),
                                 df.col("cast_total_facebook_likes"))
 
-      moviesDF.createOrReplaceTempView("movies")
-
-
       df.schema.foreach(field => println(field.dataType + ": " + field.name))
+      */
       
       val featureCols = Array(
         "color",
+        "director_facebook_likes",
+        "actor_3_facebook_likes",
+        "actor_2_name",
+        "actor_1_facebook_likes",
         "director_name",
         "genres",
         "actor_1_name",
@@ -106,7 +134,7 @@ class MovieRecommendation( @Autowired
       }
 
       val pipeline = new Pipeline().setStages(indexers)
-      val indexedDF = pipeline.fit(df).transform(df)
+      val indexedDF = pipeline.fit(movieDF).transform(movieDF)
       indexedDF.show()
 
       val indexer = new StringIndexer()
@@ -118,7 +146,9 @@ class MovieRecommendation( @Autowired
       // predict gross
       val newIndexedDF = labelIndexedDF.select(
         "label",
-        "gross", "imdb_score"
+        "imdb_score",
+        "gross",
+        "title_year"
        )
 
       val newFeatureCols = newIndexedDF.columns
@@ -130,11 +160,17 @@ class MovieRecommendation( @Autowired
       val assembledDF = assembler.transform(newIndexedDF)
       assembledDF.show()
 
-      val finalDF = assembledDF.select("label", "features")
-      finalDF.show()
-      
-      //spark.close()
 
-      return Map("Message" -> "Spring Boot Scala", "today" -> LocalDateTime.now().toString)
+      val finalDF = assembledDF.select("label", "features")
+
+      //val resultDF = finalDF.map(row => PMovieScore(row.getInt(1), row.getInt(2)))
+
+      finalDF.show(true)
+
+      finalDF.schema.foreach(field => println(field.dataType + ": " + field.name))
+      
+
+      return Map("data" -> finalDF.select("features").rdd.map(_.getAs[DenseVector](0).values).take(100)
+      )
     }
 }
