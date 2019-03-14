@@ -5,6 +5,7 @@ import java.io.Serializable
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
@@ -82,7 +83,7 @@ class LoanCreditRiskPrediction(@Autowired val spark: SparkSession)  {
       In order for the features to be used by a machine learning algorithm, the features are transformed and put into Feature Vectors, which are vectors of numbers representing the value for each feature.
 
       Below a VectorAssembler is used to transform and return a new dataFrame with all of the feature columns in a vector column
-    * */
+    */
     
     //define the feature columns to put in the feature vector**
     val featureCols = Array("balance", "duration", "history", "purpose", "amount",
@@ -131,8 +132,7 @@ class LoanCreditRiskPrediction(@Autowired val spark: SparkSession)  {
 
     // print out the random forest trees**
     model.toDebugString
-
-
+    
     // Next we use the test data to get predictions.
     // run the  model on test features to get predictions**
     val predictions = model.transform(testData)
@@ -146,7 +146,8 @@ class LoanCreditRiskPrediction(@Autowired val spark: SparkSession)  {
     val evaluator = new BinaryClassificationEvaluator().setLabelCol("label")
     // Evaluates predictions and returns a scalar metric areaUnderROC(larger is better).**
     val accuracy = evaluator.evaluate(predictions)
-    return Map("data" -> "")
+    
+    return Map("data" -> predictions.select("label","features").rdd.map(_.getAs[Double](0)).take(100))
   }
 
 }
