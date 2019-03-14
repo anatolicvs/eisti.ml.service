@@ -54,7 +54,7 @@ class MovieRecommendation(@Autowired
   @Value("#{environment['movies.data.file'] ?: '/Users/aytacozkan/data-bi/data/movie_metadata.csv'}")
   val dataUri:String = null
 
-
+    
     def computeRmse(model:MatrixFactorizationModel,data: RDD[Rating],implicitPrefs:Boolean):Double = {
 
       val predictions: RDD[Rating] = model.predict(data.map(x => (x.user,x.product)))
