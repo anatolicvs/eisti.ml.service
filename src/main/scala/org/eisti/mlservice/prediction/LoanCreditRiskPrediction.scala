@@ -5,10 +5,8 @@ import java.io.Serializable
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.ml.linalg.DenseVector
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.sql.{SparkSession}
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service

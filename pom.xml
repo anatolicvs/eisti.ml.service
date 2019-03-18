@@ -96,7 +96,6 @@
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
 			<version>${apache.spark.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -151,7 +150,6 @@
 			<version>3.6.0</version>
 			<classifier>models</classifier>
 		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
@@ -163,11 +161,6 @@
 			<groupId>org.sameersingh.scalaplot</groupId>
 			<artifactId>scalaplot</artifactId>
 			<version>0.0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
-			<version>${apache.spark.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -189,11 +182,83 @@
 			<artifactId>spark-network-shuffle_${scala.binary.version}</artifactId>
 			<version>${apache.spark.version}</version>
 		</dependency>
-	
 		<dependency>
 			<groupId>com.databricks</groupId>
 			<artifactId>spark-csv_${scala.binary.version}</artifactId>
 			<version>1.5.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.predictionio/apache-predictionio-core -->
+		<dependency>
+			<groupId>org.apache.predictionio</groupId>
+			<artifactId>apache-predictionio-core_2.11</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>rest</artifactId>
+			<version>5.5.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-spark-20 -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-spark-20_2.11</artifactId>
+			<version>5.4.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-hadoop-mr -->
+	   <!--
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-hadoop-mr</artifactId>
+			<version>5.4.3</version>
+		</dependency>
+		-->
+		<!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java -->
+		<dependency>
+			<groupId>org.xerial.snappy</groupId>
+			<artifactId>snappy-java</artifactId>
+			<version>1.1.7.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-math-scala -->
+		<dependency>
+			<groupId>org.apache.mahout</groupId>
+			<artifactId>mahout-math-scala_2.10</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-spark -->
+		<dependency>
+			<groupId>org.apache.mahout</groupId>
+			<artifactId>mahout-spark_2.10</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-math -->
+		<dependency>
+			<groupId>org.apache.mahout</groupId>
+			<artifactId>mahout-math</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-hdfs -->
+		<dependency>
+			<groupId>org.apache.mahout</groupId>
+			<artifactId>mahout-hdfs</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-client -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.thoughtworks.xstream/xstream -->
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.11.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>8.0.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.holdenkarau/spark-testing-base_2.10 -->
 		<dependency>
@@ -201,7 +266,6 @@
 			<artifactId>spark-testing-base_2.10</artifactId>
 			<version>2.0.0_0.6.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
